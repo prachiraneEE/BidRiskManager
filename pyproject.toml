@@ -1,0 +1,24 @@
+[project]
+name = "bid-risk-manager"
+version = "0.1.0"
+description = "A FastAPI backend for managing bids and assessing risk"
+readme = "README.md"
+authors = [
+    { name = "Prachi Rane", email = "prachi.rane@equalexperts.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "pydantic-settings>=2.16.2",
+    "sqlalchemy>=2.1.8",
+    "uvicorn[standard]>=0.30.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.2.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

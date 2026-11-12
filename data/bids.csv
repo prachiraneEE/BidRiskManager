@@ -1,0 +1,22 @@
+client_name,title,value,estimated_cost,deadline,status,notes
+Acme Corp,Website Redesign,50000,35000,2026-12-15,draft,New corporate site
+Acme Corp,Cloud Migration,200000,185000,2026-11-20,submitted,Tight margin - risky
+Globex Inc,Trading Platform,300000,250000,2027-03-01,draft,Large scope project
+Globex Inc,Compliance Audit Tool,80000,70000,2026-11-15,submitted,Very tight deadline
+Globex Inc,Mobile Banking App,150000,90000,2027-06-01,lost,Lost to competitor
+Globex Inc,Risk Dashboard,95000,80000,2026-12-01,lost,Client went with in-house
+Initech,Patient Portal,120000,75000,2027-02-28,won,Delivered successfully
+Initech,Lab Management System,90000,60000,2027-04-15,draft,Good margins
+Umbrella Ltd,Clinical Trial Tracker,180000,170000,2026-11-25,submitted,Razor thin margin and tight deadline
+Umbrella Ltd,Supply Chain Monitor,70000,55000,2027-01-30,lost,
+Umbrella Ltd,Inventory System,60000,50000,2026-12-10,lost,Budget issues
+Wayne Enterprises,Security Overhaul,500000,350000,2027-06-30,draft,High value - safe client
+Stark Industries,R&D Dashboard,110000,80000,2027-03-15,submitted,
+Stark Industries,Factory Automation,250000,230000,2026-11-18,draft,Thin margin and very tight deadline
+Oceanic Airlines,Booking Engine,160000,140000,2026-12-01,submitted,Client has poor track record
+Oceanic Airlines,Loyalty Program,45000,30000,2027-05-01,draft,Small but safe
+Soylent Corp,E-commerce Platform,130000,95000,2027-02-15,won,Good project
+Soylent Corp,Inventory Tracking,55000,40000,2027-01-10,draft,
+BAD_ROW,Missing Fields
+,Empty Name Row,50000,30000,2026-12-01,draft,Should be skipped
+Acme Corp,Negative Value,-5000,3000,2026-12-01,draft,Should be skipped
