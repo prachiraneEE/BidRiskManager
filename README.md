@@ -8,6 +8,8 @@ A FastAPI backend for managing bids and assessing their risk. Built as a practic
 - **FastAPI** (web framework)
 - **Pydantic** (request/response validation)
 - **SQLite** + **SQLAlchemy** (database + ORM)
+- **LangChain** (`langchain-core` + `langchain-openai`) for LLM integration
+- **OpenRouter** (LLM API gateway — uses any model via one API key)
 - **pytest** (testing)
 - **Docker** (containerization)
 
@@ -20,22 +22,32 @@ BidRiskManager/
 │   ├── config.py             # Settings from .env via pydantic-settings
 │   ├── database.py           # SQLAlchemy engine and session
 │   ├── logger.py             # Console + file logging
-│   ├── models.py             # Client and Bid ORM models
+│   ├── models.py             # Client, Bid, and Assessment ORM models
 │   ├── schemas.py            # Pydantic request/response schemas
+│   ├── agent/
+│   │   ├── __init__.py       # Package marker
+│   │   ├── tools.py          # Agent tool functions (bid, client, margin, deadline)
+│   │   ├── llm.py            # LLM client factory (OpenRouter via LangChain)
+│   │   └── risk_agent.py     # Agent orchestration with step logging
 │   ├── routers/
 │   │   ├── clients.py        # Client CRUD endpoints
-│   │   └── bids.py           # Bid CRUD endpoints
+│   │   ├── bids.py           # Bid CRUD endpoints
+│   │   └── risk.py           # Risk assessment + dashboard endpoints
 │   └── services/
-│       └── csv_import.py     # CSV data import logic
+│       ├── csv_import.py     # CSV data import logic
+│       └── risk_scorer.py    # Rule-based risk scoring (pure functions)
 ├── data/
 │   ├── clients.csv           # 8 sample clients
 │   └── bids.csv              # 18 sample bids (+ 3 bad rows for testing)
 ├── tests/
-│   ├── conftest.py           # Test fixtures and DB setup
+│   ├── conftest.py           # Test fixtures, DB setup, LLM mock
 │   ├── test_clients.py       # Client endpoint tests
 │   ├── test_bids.py          # Bid endpoint tests
 │   ├── test_health.py        # Health check test
-│   └── test_import.py        # CSV import tests
+│   ├── test_import.py        # CSV import tests
+│   ├── test_risk_scorer.py   # Risk scoring logic tests (17 tests)
+│   ├── test_agent_tools.py   # Agent tool function tests (11 tests)
+│   └── test_risk_endpoints.py # Assessment + summary endpoint tests (13 tests)
 ├── Dockerfile
 ├── pyproject.toml
 └── uv.lock
@@ -58,10 +70,12 @@ cd BidRiskManager
 # Install dependencies
 uv sync
 
-# Create a .env file (optional — defaults work fine)
+# Create a .env file
 echo 'APP_NAME=bid-risk-manager
 DATABASE_URL=sqlite:///./bid_risk_manager.db
-LOG_LEVEL=INFO' > .env
+LOG_LEVEL=INFO
+OPENROUTER_API_KEY=your-key-here
+OPENROUTER_MODEL=openai/gpt-4o-mini' > .env
 
 # Start the server
 uv run uvicorn app.main:app --reload --port 8000
@@ -110,6 +124,14 @@ uv run pytest -v
 | PUT | `/bids/{id}` | Update a bid |
 | DELETE | `/bids/{id}` | Delete a bid |
 
+### Risk Assessment
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/bids/{id}/assess` | Run AI risk assessment (rule score + LLM recommendation) |
+| GET | `/bids/{id}/assessments` | List past assessments for a bid |
+| GET | `/risks/summary` | Top 5 riskiest open bids (rule-based, no LLM) |
+
 ### Data Import
 
 | Method | Endpoint | Description |
@@ -141,6 +163,32 @@ uv run pytest -v
 | status | enum | draft, submitted, won, or lost |
 | notes | string | Optional notes |
 
+### Assessment
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | int | Primary key |
+| bid_id | int | Foreign key to Bid |
+| score | int | Risk score (0-100) |
+| level | enum | low, medium, or high |
+| reasons | list[str] | Risk factors identified |
+| recommendation | string | LLM-generated recommendation |
+| created_at | datetime | When the assessment was created |
+
+## Risk Scoring
+
+The agent evaluates bids on three risk signals:
+
+| Signal | Condition | Points |
+|--------|-----------|--------|
+| Low margin | Profit margin below 15% | +40 |
+| Tight deadline | Less than 7 days away | +30 |
+| Client losses | 2+ previously lost bids | +30 |
+
+**Risk levels:** 0-39 = low, 40-69 = medium, 70-100 = high
+
+The `POST /bids/{id}/assess` endpoint combines this rule-based score with an LLM-generated recommendation via OpenRouter. The `GET /risks/summary` endpoint uses only the rule-based scorer (fast, free, deterministic).
+
 ## Validation
 
 All endpoints validate input via Pydantic schemas:
@@ -161,10 +209,13 @@ The `POST /import` endpoint loads sample data from `data/clients.csv` and `data/
 - **3 intentionally bad rows** to demonstrate error handling
 - **Idempotent** — running the import twice creates no duplicates
 
-## Phase 2 (Planned)
+## OpenRouter Setup
 
-Phase 2 will add an AI-powered risk assessment agent using LangChain and an LLM via OpenRouter. The agent will evaluate bids on three risk signals:
+To use the AI risk assessment (`POST /bids/{id}/assess`):
 
-- Profit margin below 15%
-- Deadline less than 7 days away
-- Client with 2+ previously lost bids
+1. Create an account at [openrouter.ai](https://openrouter.ai)
+2. Go to the Keys page and create a new API key
+3. Add it to your `.env` file: `OPENROUTER_API_KEY=sk-or-v1-...`
+4. Optionally change the model: `OPENROUTER_MODEL=openai/gpt-4o-mini` (default)
+
+Without an API key, the assess endpoint returns `503`. All other endpoints work without it.
