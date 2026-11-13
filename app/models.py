@@ -1,6 +1,6 @@
-from datetime import date
+from datetime import date, datetime
 
-from sqlalchemy import Date, ForeignKey, Integer, String, Text
+from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -31,3 +31,20 @@ class Bid(Base):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     client: Mapped["Client"] = relationship(back_populates="bids")
+    assessments: Mapped[list["Assessment"]] = relationship(back_populates="bid")
+
+
+class Assessment(Base):
+    __tablename__ = "assessments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    bid_id: Mapped[int] = mapped_column(ForeignKey("bids.id"), nullable=False)
+    score: Mapped[int] = mapped_column(Integer, nullable=False)
+    level: Mapped[str] = mapped_column(String(10), nullable=False)
+    reasons: Mapped[str] = mapped_column(Text, nullable=False)
+    recommendation: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=func.now()
+    )
+
+    bid: Mapped["Bid"] = relationship(back_populates="assessments")

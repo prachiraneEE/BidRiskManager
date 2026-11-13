@@ -9,7 +9,7 @@ import app.models  # noqa: F401 — registers models with Base.metadata
 from app.config import settings
 from app.database import Base, engine, get_db
 from app.logger import logger
-from app.routers import bids, clients
+from app.routers import bids, clients, risk
 from app.services.csv_import import import_all
 
 
@@ -30,6 +30,8 @@ app = FastAPI(
 
 app.include_router(clients.router)
 app.include_router(bids.router)
+app.include_router(risk.router)
+app.include_router(risk.summary_router)
 
 
 @app.exception_handler(Exception)

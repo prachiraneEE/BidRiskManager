@@ -1,3 +1,6 @@
+from datetime import date, timedelta
+from unittest.mock import MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -53,4 +56,35 @@ def sample_bid(client, sample_client):
         "estimated_cost": 35000,
         "deadline": "2026-12-15",
     })
+    return response.json()
+
+
+@pytest.fixture
+def mock_llm():
+    mock_response = MagicMock()
+    mock_response.content = "This bid carries moderate risk. Proceed with caution and monitor the deadline closely."
+
+    mock_chat = MagicMock()
+    mock_chat.invoke.return_value = mock_response
+
+    with patch("app.agent.risk_agent.get_llm", return_value=mock_chat):
+        yield mock_chat
+
+
+@pytest.fixture
+def high_risk_bid(client, sample_client):
+    client.put(
+        f"/clients/{sample_client['id']}",
+        json={"past_bids_lost": 3},
+    )
+    response = client.post(
+        "/bids/",
+        json={
+            "client_id": sample_client["id"],
+            "title": "Risky Project",
+            "value": 10000,
+            "estimated_cost": 9000,
+            "deadline": (date.today() + timedelta(days=3)).isoformat(),
+        },
+    )
     return response.json()
