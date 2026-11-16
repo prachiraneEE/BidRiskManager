@@ -2,6 +2,17 @@
 
 A FastAPI backend for managing bids and assessing their risk. Built as a practice project to demonstrate Python backend development and AI-infused product skills.
 
+## Screenshots
+
+### Swagger UI — All Endpoints
+![Swagger Overview](docs/screenshots/swagger-overview.jpg)
+
+### AI Risk Assessment Response
+![Assess Response](docs/screenshots/assess-response.jpg)
+
+### Risk Dashboard — Top 5 Riskiest Bids
+![Risk Summary](docs/screenshots/risk-summary.jpg)
+
 ## Tech Stack
 
 - **Python 3.12** with **uv** (package manager)
