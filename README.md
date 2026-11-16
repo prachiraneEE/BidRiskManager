@@ -1,7 +1,6 @@
 # Bid Risk Manager
 
 A FastAPI backend for managing bids and assessing their risk. Built as a practice project to demonstrate Python backend development and AI-infused product skills.
-![Problem Statement](https://docs.google.com/document/d/1tYwgjGmaMzKdIgXKLTyooIAuajVefHjf_XU8eahmzRI/edit?tab=t.0)
 
 ## Screenshots
 
